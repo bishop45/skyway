@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ml5 Room</title>
+    <title>Gesture Conference Room</title>
     <link rel="stylesheet" href="../shared/style.css">
-    <!-- ml5 -->
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
   </head>
   <body>
     <div class="container">
-      <h1 class="heading">ml5 Room</h1>
+      <h1 class="heading">Gesture Conference Room</h1>
       <p class="note">
         1. Please enter your Handle Name:
         <input type="text" placeholder="Handle Name" id="js-handle-name">
@@ -42,7 +42,7 @@
           <p>
              My Status:<img id ="js-my-status", src=""/>
           </p>
-
+          <div id='label-container'></div>
           <!--<span id="js-room-mode"></span>:-->
         </div>
 
@@ -65,7 +65,7 @@
       <p class="meta" id="js-meta"></p>
     </div>
     <script src="//cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
-    <script src="../shared/key_local.js"></script>
+    <script src="../shared/key.js"></script>
     <script src="./script.js?123"></script>
   </body>
 </html>

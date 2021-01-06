@@ -1,5 +1,8 @@
 const Peer = window.Peer;
 
+let model, webcam, labelContainer, maxPredictions;
+
+
 function ChangeVideoTxt(txt) {
   document.getElementById("js-video-status").innerHTML=txt;
 }
@@ -34,6 +37,18 @@ function ChangeAudioTxt(txt) {
   const stResetTrigger = document.getElementById("js-st-reset");
   const myStatus = document.getElementById("js-my-status");
 
+
+  const modelURL = '../shared/model.json';
+  const metadataURL = '../shared/metadata.json';
+
+  model = await tmImage.load(modelURL, metadataURL);
+  maxPredictions = model.getTotalClasses();
+  webcam = new tmImage.Webcam(200, 200, true); // width, height, flip
+  await webcam.setup(); // request access to the webcam
+  webcam.play();
+
+
+
   let localStream = await navigator.mediaDevices
     .getUserMedia({
       audio: true,
@@ -47,10 +62,8 @@ function ChangeAudioTxt(txt) {
   localVideo.playsInline = true;
   await localVideo.play().catch(console.error);
 
-  /*let peer = (window.peer = new Peer({
-    key: window.__SKYWAY_KEY__,
-    debug: 3,
-  }));*/
+
+
 
 // Video ON
   videoOnTrigger.addEventListener('click', () => {
@@ -121,11 +134,13 @@ function ChangeAudioTxt(txt) {
       let peerHandleName = document.createElement('a');
       peerHandleName.textContent = stream.peerId;
       peerHandleName.setAttribute('peer-id', stream.peerId);
+      peerHandleName.style.cssText = "font-size: 30pt"+"color: #00ff00";//"font-weight: bold;"+
       remoteVideos.append(peerHandleName);
       let peerStatus = document.createElement('img');
       peerStatus.src ="";
       peerStatus.setAttribute('peer-img-id', stream.peerId);
       remoteVideos.append(peerStatus);
+      remoteVideos.style.textAlign="center";
       //console.log(remoteVideos.length);
       //messages.textContent += remoteVideos.length;
 
@@ -179,11 +194,49 @@ function ChangeAudioTxt(txt) {
       sendTrigger.removeEventListener('click', onClickSend);
       messages.textContent += '==='+`${peer.id}`+' (You) left===\n';
       Array.from(remoteVideos.children).forEach(remoteVideo => {
-        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+        //remoteVideo.srcObject.getTracks().forEach(track => track.stop());
         remoteVideo.srcObject = null;
         remoteVideo.remove();
       });
     });
+
+    // Convenience function to setup a webcam
+
+
+
+    labelContainer = document.getElementById('label-container');
+    /*for (let i = 0; i < maxPredictions; i++) { // and class labels
+        labelContainer.appendChild(document.createElement('div'));
+    }*/
+
+    window.requestAnimationFrame(loop);
+    async function loop() {
+        webcam.update(); // update the webcam frame
+        await predict();
+        setTimeout(function(){
+          window.requestAnimationFrame(loop);
+        }, 1000)
+    }
+
+    // run the webcam image through the image model
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        //const prediction = await model.predict(webcam.canvas);
+        const prediction = await model.predictTopK(webcam.canvas,1,true);
+        //labelContainer.innerHTML = prediction[0].className;
+        if (prediction[0].className === "Class 1"){
+          this.status ="ok";
+          statusSend();
+        }
+        else if (prediction[0].className === "Class 2") {
+          this.status ="kyoshu";
+          statusSend();
+        }
+        else if (prediction[0].className === "Class 4") {
+          this.status ="ng";
+          statusSend();
+        }
+    }
 
     sendTrigger.addEventListener('click', onClickSend);
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
@@ -192,7 +245,7 @@ function ChangeAudioTxt(txt) {
     stNgTrigger.addEventListener('click', {status: "ng", handleEvent: statusSend});
     stKyoshuTrigger.addEventListener('click', {status: "kyoshu", handleEvent: statusSend});
     stKikoenaiTrigger.addEventListener('click', {status: "kikoenai", handleEvent: statusSend});
-    stResetTrigger.addEventListener('click', {status: "null", handleEvent: statusSend});
+    stResetTrigger.addEventListener('click', {status: "reset", handleEvent: statusSend});
 
     function onClickSend() {
       // Send message to all of the peers in the room via websocket
@@ -204,7 +257,7 @@ function ChangeAudioTxt(txt) {
     function statusSend(e) {
       // Send message to all of the peers in the room via websocket
       room.send(this.status);
-      if (this.status === "null"){
+      if (this.status === "reset"){
         myStatus.src = "";
       }else{
         myStatus.src = "../shared/"+this.status+".png";
