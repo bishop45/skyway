@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ml5 Room</title>
+    <link rel="stylesheet" href="../shared/style.css">
+    <!-- ml5 -->
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="heading">ml5 Room</h1>
+      <p class="note">
+        1. Please enter your Handle Name:
+        <input type="text" placeholder="Handle Name" id="js-handle-name">
+        <button id="js-peer-trigger">OK</button>
+      </p>
+      <p class="note">
+        2. Please enter room name:
+        <input type="text" placeholder="Room Name" id="js-room-id">
+        <button id="js-join-trigger">Join</button>
+        <button id="js-leave-trigger">Leave</button>
+      </p>
+      <!--<p class="note">
+        Change Room mode (before join in a room):
+        <a href="#">mesh</a> / <a href="#sfu">sfu</a>
+      </p>-->
+      <div class="room">
+        <div>
+          <p>
+            <video id="js-local-stream"></video>
+            Video:<a id ="js-video-status">ON</a>
+            <button id="js-video-on">ON</button>
+            <button id="js-video-off">OFF</button>
+          </p>
+          <p>
+            Audio:<a id ="js-audio-status">ON</a>
+            <button id="js-audio-on">ON</button>
+            <button id="js-audio-off">OFF</button>
+          </p>
+          <p>
+             My Status:<img id ="js-my-status", src=""/>
+          </p>
+
+          <!--<span id="js-room-mode"></span>:-->
+        </div>
+
+        <div class="remote-streams" id="js-remote-streams"></div>
+
+        <div>
+          <pre class="messages" id="js-messages"></pre>
+          <input type="text" id="js-local-text">
+          <button id="js-send-trigger">Send</button>
+          <p>
+            <button id="js-st-ok"><img src="../shared/ok.png" alt="OK" /></button>
+            <button id="js-st-ng"><img src="../shared/ng.png" alt="NG" /></button>
+            <button id="js-st-kikoenai"><img src="../shared/kikoenai.png" alt="kikoenai" /></button>
+            <button id="js-st-kyoshu"><img src="../shared/kyoshu.png" alt="kyoshu" /></button>
+            <button id="js-st-reset">RESET</button>
+          </p>
+        </div>
+
+      </div>
+      <p class="meta" id="js-meta"></p>
+    </div>
+    <script src="//cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
+    <script src="../shared/key_local.js"></script>
+    <script src="./script.js?123"></script>
+  </body>
+</html>
