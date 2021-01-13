@@ -1,5 +1,5 @@
 const Peer = window.Peer;
-
+const voiceURL = "https://github.com/bishop45/skyway/tree/master/shared/voice/"//"http://localhost:8080/shared/voice/"
 let model, webcam, labelContainer, maxPredictions;
 
 
@@ -9,6 +9,22 @@ function ChangeVideoTxt(txt) {
 
 function ChangeAudioTxt(txt) {
   document.getElementById("js-audio-status").innerHTML=txt;
+}
+
+async function createModel() {
+  //voice Command
+  const voiceModelURL = voiceURL + "model.json"; // model topology
+  const voiceMetadataURL = voiceURL +  "metadata.json";
+
+  const recognizer = speechCommands.create(
+      "BROWSER_FFT", // fourier transform type, not useful to change
+      undefined, // speech commands vocabulary feature, not useful for your models
+      voiceModelURL,
+      voiceMetadataURL);
+
+  // check that model and metadata are loaded via HTTPS requests.
+  await recognizer.ensureModelLoaded();
+  return recognizer;
 }
 
 (async function main() {
@@ -56,14 +72,21 @@ function ChangeAudioTxt(txt) {
     })
     .catch(console.error);
 
+
+  //voice Command
+  const recognizer = await createModel();
+  const classLabels = recognizer.wordLabels(); // get class labels
+  const labelContainer = document.getElementById("label-container");
+  for (let i = 0; i < classLabels.length; i++) {
+      labelContainer.appendChild(document.createElement("div"));
+  }
+
+
   // Render local stream
   localVideo.muted = true;
   localVideo.srcObject = localStream;
   localVideo.playsInline = true;
   await localVideo.play().catch(console.error);
-
-
-
 
 // Video ON
   videoOnTrigger.addEventListener('click', () => {
@@ -203,12 +226,6 @@ function ChangeAudioTxt(txt) {
     // Convenience function to setup a webcam
 
 
-
-    labelContainer = document.getElementById('label-container');
-    /*for (let i = 0; i < maxPredictions; i++) { // and class labels
-        labelContainer.appendChild(document.createElement('div'));
-    }*/
-
     window.requestAnimationFrame(loop);
     async function loop() {
         webcam.update(); // update the webcam frame
@@ -217,6 +234,49 @@ function ChangeAudioTxt(txt) {
           window.requestAnimationFrame(loop);
         }, 1000)
     }
+
+
+    // listen() takes two arguments:
+    // 1. A callback function that is invoked anytime a word is recognized.
+    // 2. A configuration object with adjustable fields
+    recognizer.listen(result => {
+        const scores = result.scores; // probability of prediction for each class
+        let indexMax
+        indexMax = result.scores.indexOf(Math.max(...result.scores));
+        console.log(indexMax,classLabels[indexMax]);
+        if (classLabels[indexMax] === "ok"){
+          this.status ="ok";
+          statusSend();
+        }
+        else if (classLabels[indexMax] === "tewoageru") {
+          this.status ="kyoshu";
+          statusSend();
+        }
+        else if (classLabels[indexMax] === "ng") {
+          this.status ="ng";
+          statusSend();
+        }
+        else if (classLabels[indexMax] === "reset") {
+          this.status ="reset";
+          statusSend();
+        }
+        else if (classLabels[indexMax] === "kikoenai") {
+          this.status ="kikoenai";
+          statusSend();
+        }
+        // render the probability scores per class
+        /*for (let i = 0; i < classLabels.length; i++) {
+            const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }*/
+    }, {
+        includeSpectrogram: true, // in case listen should return result.spectrogram
+        probabilityThreshold: 0.75,
+        invokeCallbackOnNoiseAndUnknown: false,
+        overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+    });
+
+
 
     // run the webcam image through the image model
     async function predict() {
