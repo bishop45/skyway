@@ -1,5 +1,5 @@
 const Peer = window.Peer;
-const voiceURL = "https://github.com/bishop45/skyway/tree/master/shared/voice/"//"http://localhost:8080/shared/voice/"
+const voiceURL = "../shared/voice/"//"http://localhost:8080/shared/voice/"
 let model, webcam, labelContainer, maxPredictions;
 
 
